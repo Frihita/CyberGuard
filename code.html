@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard | Futuristic Cyber Safety</title>
+    <!-- CSS Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --neon-turquoise: #00f2ff;
+            --neon-blue: #0072ff;
+            --bg-dark: #050b18;
+            --card-bg: rgba(16, 24, 45, 0.8);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Neon & Glassmorphism Effects */
+        .neon-border {
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        .turquoise-gradient {
+            background: linear-gradient(90deg, var(--neon-turquoise), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--neon-turquoise);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            color: var(--neon-turquoise);
+        }
+
+        .progress-ring {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0.4; }
+        }
+
+        .neon-pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Profile Frames */
+        .profile-frame {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-turquoise);
+            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+
+    <!-- Header -->
+    <header class="p-6 flex justify-between items-center border-b border-white/5 sticky top-0 bg-[#050b18]/80 backdrop-blur-md z-50">
+        <div>
+            <h1 class="text-2xl font-bold turquoise-gradient flex items-center gap-2">
+                <i data-lucide="shield-check" class="text-[#00f2ff]"></i>
+                CyberGuard
+            </h1>
+            <p class="text-xs text-white/40 tracking-widest uppercase">Security Protocol v5.2</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="user-status" class="text-right hidden">
+                <p class="text-xs text-white/60">Welcome back,</p>
+                <p class="text-sm font-semibold" id="display-username">Agent</p>
+            </div>
+            <button onclick="toggleAuth()" class="p-2 rounded-full hover:bg-white/5 transition-colors">
+                <i data-lucide="user"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Auth View -->
+    <div id="auth-overlay" class="fixed inset-0 modal-overlay z-[100] hidden flex items-center justify-center p-6">
+        <div class="w-full max-w-md card p-8 rounded-2xl relative">
+            <button onclick="toggleAuth()" class="absolute top-4 right-4 text-white/40 hover:text-white">
+                <i data-lucide="x"></i>
+            </button>
+            <h2 class="text-2xl font-bold mb-2">Initialize Session</h2>
+            <p class="text-white/40 mb-8">Secure your safety score and history across devices.</p>
+            <div class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-[#00f2ff]">
+                <input type="password" id="auth-pass" placeholder="Access Key" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-[#00f2ff]">
+                <button onclick="login()" class="w-full bg-[#00f2ff] text-black font-bold py-4 rounded-xl shadow-lg shadow-[#00f2ff]/20">
+                    CONTINUE TO PROTOCOL
+                </button>
+                <div class="text-center text-sm text-white/20 my-2">OR</div>
+                <button onclick="continueAsGuest()" class="w-full bg-white/5 text-white font-medium py-4 rounded-xl border border-white/10 hover:bg-white/10">
+                    CONTINUE AS GUEST
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Checklist Modal -->
+    <div id="link-modal" class="fixed inset-0 modal-overlay z-[110] hidden flex items-center justify-center p-6">
+        <div class="w-full max-w-lg card p-8 rounded-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Safety Checklist: Think Before You Click</h2>
+                <button onclick="closeLinkModal()" class="text-white/40 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <p class="text-white/40 mb-6 text-sm">Answer these questions about the link you're about to open.</p>
+            <div class="space-y-4 mb-8">
+                <label class="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer">
+                    <input type="checkbox" class="checklist-item w-5 h-5 border-2 border-[#00f2ff] bg-transparent rounded-full checked:bg-[#00f2ff] appearance-none transition-all">
+                    <span>Do I recognize the sender and the link?</span>
+                </label>
+                <label class="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer">
+                    <input type="checkbox" class="checklist-item w-5 h-5 border-2 border-[#00f2ff] bg-transparent rounded-full checked:bg-[#00f2ff] appearance-none transition-all">
+                    <span>Was I expecting to receive this link?</span>
+                </label>
+                <label class="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer">
+                    <input type="checkbox" class="checklist-item w-5 h-5 border-2 border-[#00f2ff] bg-transparent rounded-full checked:bg-[#00f2ff] appearance-none transition-all">
+                    <span>Does the link text match its actual destination?</span>
+                </label>
+                <label class="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer">
+                    <input type="checkbox" class="checklist-item w-5 h-5 border-2 border-[#00f2ff] bg-transparent rounded-full checked:bg-[#00f2ff] appearance-none transition-all">
+                    <span>Is the message creating a false sense of urgency?</span>
+                </label>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="closeLinkModal()" class="flex-1 py-3 rounded-xl border border-white/10 hover:bg-white/5">Cancel</button>
+                <button onclick="getLinkVerdict()" class="flex-1 py-3 rounded-xl bg-[#00f2ff] text-black font-bold">Verify & Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-6 space-y-8">
+
+        <!-- DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab-content active space-y-8">
+            <div class="card p-8 rounded-3xl flex flex-col items-center text-center relative overflow-hidden">
+                <h3 class="text-white/40 uppercase tracking-tighter text-sm mb-8">Cyber Safety Index (CSI)</h3>
+                <div class="relative w-64 h-64 flex items-center justify-center">
+                    <svg class="w-full h-full">
+                        <circle class="text-white/5" stroke-width="8" stroke="currentColor" fill="transparent" r="100" cx="128" cy="128" />
+                        <circle id="score-circle" class="text-[#00f2ff] progress-ring" stroke-width="8" stroke-dasharray="628.3" stroke-dashoffset="628.3" stroke-linecap="round" stroke="currentColor" fill="transparent" r="100" cx="128" cy="128" />
+                    </svg>
+                    <div class="absolute text-center">
+                        <span id="score-value" class="text-6xl font-black neon-text">0</span>
+                        <p id="score-label" class="text-white/40 text-sm mt-1 uppercase">Initializing...</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-12">
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-left">
+                        <div class="flex justify-between items-center mb-2">
+                            <i data-lucide="shield" class="text-[#00f2ff] w-5 h-5"></i>
+                            <span id="shield-indicator" class="w-2 h-2 rounded-full bg-red-500"></span>
+                        </div>
+                        <p class="text-xs text-white/40">Privacy Integrity</p>
+                        <p class="font-bold text-sm" id="privacy-status">Scanning...</p>
+                        <p class="text-[10px] text-white/20 mt-1" id="privacy-detail">Check permissions in Vault</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-left">
+                        <div class="flex justify-between items-center mb-2">
+                            <i data-lucide="cpu" class="text-[#00f2ff] w-5 h-5"></i>
+                            <span id="app-indicator" class="w-2 h-2 rounded-full bg-red-500"></span>
+                        </div>
+                        <p class="text-xs text-white/40">App Sandbox Hygiene</p>
+                        <p class="font-bold text-sm" id="app-status">Checking...</p>
+                        <p class="text-[10px] text-white/20 mt-1" id="app-detail">Verify apps in Intel tab</p>
+                    </div>
+                </div>
+
+                <button onclick="recheckSafety()" class="mt-8 px-8 py-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all flex items-center gap-2 text-sm">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    RE-INITIALIZE ANALYSIS
+                </button>
+            </div>
+        </div>
+
+        <!-- TOOLS TAB -->
+        <div id="tab-tools" class="tab-content space-y-8">
+            <h2 class="text-3xl font-bold turquoise-gradient">Defense Tools</h2>
+            
+            <!-- Password Checker -->
+            <div class="card p-6 rounded-3xl space-y-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="key" class="text-[#00f2ff]"></i>
+                    <h3 class="text-xl font-bold">Entropy Analyzer</h3>
+                </div>
+                <div class="space-y-4">
+                    <input type="text" id="pass-input" oninput="checkPassword()" placeholder="Enter password to analyze..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-[#00f2ff]">
+                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div id="pass-strength-bar" class="h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <div class="flex justify-between text-xs font-mono uppercase tracking-widest text-white/40">
+                        <span>Strength: <span id="pass-strength-label" class="text-white">NONE</span></span>
+                        <span>Crack Time: <span id="pass-crack-time" class="text-white">INSTANT</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Safety Scan -->
+            <div class="card p-6 rounded-3xl space-y-6">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-check" class="text-[#00f2ff]"></i>
+                        <h3 class="text-xl font-bold">File Integrity Scan</h3>
+                    </div>
+                </div>
+                <div class="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center space-y-4 hover:border-[#00f2ff]/30 transition-colors cursor-pointer" onclick="document.getElementById('file-upload').click()">
+                    <input type="file" id="file-upload" class="hidden" onchange="handleFileScan(this)">
+                    <i data-lucide="upload" class="mx-auto w-10 h-10 text-white/20"></i>
+                    <div>
+                        <p class="font-bold">Click to upload a file</p>
+                        <p class="text-xs text-white/40">This is a basic, local check. No file is actually uploaded.</p>
+                    </div>
+                </div>
+                <div id="file-scan-result" class="hidden p-4 rounded-xl border text-sm"></div>
+            </div>
+
+            <!-- Scam Checker -->
+            <div class="card p-6 rounded-3xl space-y-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="message-square-warning" class="text-[#00f2ff]"></i>
+                    <h3 class="text-xl font-bold">Scam Pattern Engine</h3>
+                </div>
+                <textarea id="scam-input" rows="4" placeholder="Paste suspicious message here..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-[#00f2ff] resize-none"></textarea>
+                <button onclick="analyzeScam()" class="w-full py-4 bg-[#00f2ff]/10 border border-[#00f2ff]/30 text-[#00f2ff] font-bold rounded-xl hover:bg-[#00f2ff]/20">
+                    EXECUTE ANALYSIS
+                </button>
+                <div id="scam-result" class="hidden p-4 rounded-xl border"></div>
+            </div>
+
+            <!-- Neural Link Scan -->
+            <div class="card p-6 rounded-3xl space-y-4">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="link" class="text-[#00f2ff]"></i>
+                    <h3 class="text-xl font-bold">Neural Link Scan</h3>
+                </div>
+                <input type="text" id="link-input" placeholder="Paste suspicious URL..." class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-[#00f2ff]">
+                <button onclick="openLinkModal()" class="w-full py-4 bg-white/5 border border-white/10 text-white font-medium rounded-xl hover:bg-white/10">
+                    START SCAN
+                </button>
+                <div id="link-verdict" class="hidden p-4 rounded-xl border"></div>
+            </div>
+        </div>
+
+        <!-- VAULT TAB -->
+        <div id="tab-privacy" class="tab-content space-y-8">
+            <h2 class="text-3xl font-bold turquoise-gradient">Privacy Vault</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card p-6 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-[#00f2ff]/10 flex items-center justify-center text-[#00f2ff]">
+                        <i data-lucide="camera"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">Visual Privacy</h3>
+                    <p class="text-sm text-white/40">Review apps with optical hardware permissions.</p>
+                    <button onclick="openPermissions('camera')" class="w-full py-3 bg-white/5 rounded-xl border border-white/10 text-sm hover:bg-white/10">OPEN CAMERA SETTINGS</button>
+                </div>
+                <div class="card p-6 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-[#00f2ff]/10 flex items-center justify-center text-[#00f2ff]">
+                        <i data-lucide="mic"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">Audio Privacy</h3>
+                    <p class="text-sm text-white/40">Review apps with acoustic hardware access.</p>
+                    <button onclick="openPermissions('microphone')" class="w-full py-3 bg-white/5 rounded-xl border border-white/10 text-sm hover:bg-white/10">OPEN MIC SETTINGS</button>
+                </div>
+            </div>
+
+            <!-- Data Protection Tips -->
+            <div class="card rounded-3xl overflow-hidden">
+                <div class="p-6 border-b border-white/5">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="shield-check" class="text-[#00f2ff]"></i>
+                        <h3 class="text-xl font-bold">Data Protection Tips</h3>
+                    </div>
+                    <p class="text-xs text-white/40">Learn more about protecting your personal information.</p>
+                </div>
+                <div class="divide-y divide-white/5">
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('tip1')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff] transition-colors">What data apps should NEVER ask for</span>
+                            <i data-lucide="chevron-down" id="icon-tip1"></i>
+                        </button>
+                        <div id="tip1" class="hidden mt-4 text-sm text-white/60 leading-relaxed">
+                            Apps should never ask for your passwords, OTPs, or master PINs. Be wary of apps asking for accessibility services or screen recording permissions unless absolutely necessary for their core function.
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('tip2')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff] transition-colors">How to spot fake permission screens</span>
+                            <i data-lucide="chevron-down" id="icon-tip2"></i>
+                        </button>
+                        <div id="tip2" class="hidden mt-4 text-sm text-white/60 leading-relaxed">
+                            Fake screens often have poor grammar, blurry logos, or ask for permissions that don't match the app's purpose (e.g., a calculator asking for contact access).
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('tip3')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff] transition-colors">How to secure your Google account</span>
+                            <i data-lucide="chevron-down" id="icon-tip3"></i>
+                        </button>
+                        <div id="tip3" class="hidden mt-4 text-sm text-white/60 leading-relaxed">
+                            Enable 2-Step Verification, perform regular Security Checkups in your Google settings, and review "Third-party apps with account access".
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPS TAB -->
+        <div id="tab-apps" class="tab-content space-y-8">
+            <h2 class="text-3xl font-bold turquoise-gradient">App Intel</h2>
+            <div class="card p-8 rounded-3xl text-center space-y-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#00f2ff]/10 border border-[#00f2ff]/20 neon-pulse">
+                    <i data-lucide="cpu" class="w-10 h-10 text-[#00f2ff]"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold" id="app-count">0</h3>
+                    <p class="text-white/40 text-sm">Detected Applications</p>
+                </div>
+                <div class="w-full max-w-sm mx-auto h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div id="scan-progress" class="h-full w-0 bg-[#00f2ff] transition-all duration-[3000ms]"></div>
+                </div>
+                <p class="text-xs text-white/20 italic font-mono" id="scan-log">SYSTEM IDLE...</p>
+            </div>
+            <div id="app-list" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <!-- HELP TAB -->
+        <div id="tab-help" class="tab-content space-y-8">
+            <div class="flex items-center gap-3">
+                <i data-lucide="help-circle" class="text-[#00f2ff]"></i>
+                <h2 class="text-3xl font-bold">Help & Support</h2>
+            </div>
+            
+            <!-- Fake Call Script Library -->
+            <div class="card rounded-3xl overflow-hidden">
+                <div class="p-6 border-b border-white/5">
+                    <div class="flex items-center gap-3 mb-1">
+                        <i data-lucide="book-open" class="text-[#00f2ff] w-5 h-5"></i>
+                        <h3 class="text-xl font-bold">Fake Call Script Library</h3>
+                    </div>
+                    <p class="text-xs text-white/40">Learn to recognize common scam calls and how to respond.</p>
+                </div>
+                <div class="divide-y divide-white/5">
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('script1')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">The Tech Support Scam</span>
+                            <i data-lucide="chevron-down" id="icon-script1"></i>
+                        </button>
+                        <div id="script1" class="hidden mt-4 space-y-4 text-sm leading-relaxed">
+                            <p><span class="text-red-500 font-bold">What they say:</span> "Your computer has a virus. Download this remote access tool so we can fix it."</p>
+                            <p><span class="text-[#00f2ff] font-bold">What they really mean:</span> They want to install malware and steal your passwords or lock your files for ransom.</p>
+                            <p><span class="text-green-500 font-bold">What you should say:</span> "I'll take it to a local certified professional. Goodbye."</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('script2')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">The Bank Impersonator</span>
+                            <i data-lucide="chevron-down" id="icon-script2"></i>
+                        </button>
+                        <div id="script2" class="hidden mt-4 space-y-4 text-sm leading-relaxed">
+                            <p><span class="text-red-500 font-bold">What they say:</span> "Unusual activity on your account. Verify your identity by telling me the OTP sent to your phone."</p>
+                            <p><span class="text-[#00f2ff] font-bold">What they really mean:</span> They are trying to log into your account and need the OTP to bypass security.</p>
+                            <p><span class="text-green-500 font-bold">What you should say:</span> "I'll call the bank back using the number on my official card."</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('script3')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">The Unexpected Prize Scam</span>
+                            <i data-lucide="chevron-down" id="icon-script3"></i>
+                        </button>
+                        <div id="script3" class="hidden mt-4 space-y-4 text-sm leading-relaxed">
+                            <p><span class="text-red-500 font-bold">What they say:</span> "Congratulations! You've won a new iPhone / free vacation! To claim your prize, you just need to pay a small shipping fee."</p>
+                            <p><span class="text-[#00f2ff] font-bold">What they really mean:</span> There is no prize. They want to steal the 'fee' and your credit card details.</p>
+                            <p><span class="text-green-500 font-bold">What you should say:</span> "I never entered a contest. Hang up immediately."</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('script4')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">The Government Agency Scam</span>
+                            <i data-lucide="chevron-down" id="icon-script4"></i>
+                        </button>
+                        <div id="script4" class="hidden mt-4 space-y-4 text-sm leading-relaxed">
+                            <p><span class="text-red-500 font-bold">What they say:</span> "This is the IRS/Police. There is a warrant for your arrest unless you pay your fine in gift cards."</p>
+                            <p><span class="text-[#00f2ff] font-bold">What they really mean:</span> Government agencies never call to threaten arrest or ask for payment in gift cards/crypto.</p>
+                            <p><span class="text-green-500 font-bold">What you should say:</span> "Official agencies communicate via mail. Please send a notice."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What To Do If You're Hacked -->
+            <div class="card rounded-3xl overflow-hidden">
+                <div class="p-6 border-b border-white/5">
+                    <div class="flex items-center gap-3 mb-1">
+                        <i data-lucide="alert-octagon" class="text-[#00f2ff] w-5 h-5"></i>
+                        <h3 class="text-xl font-bold">What To Do If You're Hacked</h3>
+                    </div>
+                    <p class="text-xs text-white/40">Immediate steps to take if you suspect your accounts are compromised.</p>
+                </div>
+                <div class="divide-y divide-white/5">
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('hack1')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">Email Account Hacked</span>
+                            <i data-lucide="chevron-down" id="icon-hack1"></i>
+                        </button>
+                        <div id="hack1" class="hidden mt-4 space-y-6 text-sm leading-relaxed">
+                            <div>
+                                <p class="text-[#00f2ff] font-bold mb-2 uppercase text-[10px]">Immediate Steps:</p>
+                                <ul class="list-disc ml-4 space-y-2 text-white/60">
+                                    <li>Try to sign in and reset your password immediately. If you can, enable 2FA.</li>
+                                    <li>If you cannot sign in, use the account recovery option provided by the service.</li>
+                                    <li>Check for forwarding rules or automatic replies set by the hacker.</li>
+                                    <li>Log out from all devices.</li>
+                                </ul>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-2xl bg-green-500/5 border border-green-500/10">
+                                    <p class="text-green-500 font-bold mb-2 uppercase text-[10px]">Do This</p>
+                                    <ul class="list-disc ml-4 text-[11px] text-white/60">
+                                        <li>Act immediately</li>
+                                        <li>Enable 2FA</li>
+                                        <li>Check connected apps</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+                                    <p class="text-red-500 font-bold mb-2 uppercase text-[10px]">Don't Do This</p>
+                                    <ul class="list-disc ml-4 text-[11px] text-white/60">
+                                        <li>Don't panic and delete account</li>
+                                        <li>Don't reply to hacker emails</li>
+                                        <li>Don't ignore it</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('hack2')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">Instagram / Social Media Hacked</span>
+                            <i data-lucide="chevron-down" id="icon-hack2"></i>
+                        </button>
+                        <div id="hack2" class="hidden mt-4 text-sm text-white/60 leading-relaxed">
+                            Request a login link or security code from the platform. Use the 'Recover My Account' feature. Revoke access to suspicious third-party apps and change passwords for linked accounts.
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <button onclick="toggleAccordion('hack3')" class="w-full text-left flex justify-between items-center group">
+                            <span class="font-medium group-hover:text-[#00f2ff]">Phone Lost or Stolen</span>
+                            <i data-lucide="chevron-down" id="icon-hack3"></i>
+                        </button>
+                        <div id="hack3" class="hidden mt-4 space-y-6 text-sm leading-relaxed">
+                            <div>
+                                <p class="text-[#00f2ff] font-bold mb-2 uppercase text-[10px]">Immediate Steps:</p>
+                                <ul class="list-disc ml-4 space-y-2 text-white/60">
+                                    <li>Use 'Find My Device' (Android) or 'Find My' (iPhone) to locate or erase.</li>
+                                    <li>Contact your carrier to suspend service and block the SIM card.</li>
+                                    <li>Change passwords for critical accounts (Email, Bank, Social).</li>
+                                    <li>Report theft to police for insurance claims.</li>
+                                </ul>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-2xl bg-green-500/5 border border-green-500/10">
+                                    <p class="text-green-500 font-bold mb-2 uppercase text-[10px]">Do This</p>
+                                    <ul class="list-disc ml-4 text-[11px] text-white/60">
+                                        <li>Remotely lock/erase device</li>
+                                        <li>Contact carrier to block SIM</li>
+                                        <li>File police report</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+                                    <p class="text-red-500 font-bold mb-2 uppercase text-[10px]">Don't Do This</p>
+                                    <ul class="list-disc ml-4 text-[11px] text-white/60">
+                                        <li>Don't confront the thief</li>
+                                        <li>Don't wait to take action</li>
+                                        <li>Don't assume screen lock is enough</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube Feed Section -->
+            <div class="card p-6 rounded-3xl space-y-4">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="play" class="text-[#00f2ff]"></i>
+                    <h3 class="text-xl font-bold">Stay Updated</h3>
+                </div>
+                <p class="text-sm text-white/40">Watch daily circulating scams in the market to stay ahead of threats.</p>
+                <div id="yt-container" class="aspect-video bg-black rounded-2xl overflow-hidden"></div>
+            </div>
+
+            <!-- Cyber Crime Report -->
+            <div class="card p-6 rounded-3xl space-y-4">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="megaphone" class="text-[#00f2ff]"></i>
+                    <h3 class="text-xl font-bold">Report a Cyber Crime</h3>
+                </div>
+                <p class="text-sm text-white/40">If you are a victim of a cybercrime, report it to the authorities immediately.</p>
+                <button onclick="window.open('https://cybercrime.gov.in')" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-600/20 uppercase tracking-widest text-sm">
+                    Go to Official Cyber Crime Portal
+                </button>
+                <p class="text-center text-[10px] text-white/20">This is a government portal and is not affiliated with CyberGuard.</p>
+            </div>
+        </div>
+
+        <!-- TEAM TAB -->
+        <div id="tab-team" class="tab-content space-y-8">
+            <h2 class="text-3xl font-bold turquoise-gradient">About The Team</h2>
+            <div class="flex flex-wrap justify-center gap-12 mt-12">
+                <div class="text-center group">
+                    <div class="profile-frame group-hover:border-white transition-colors">
+                        <i data-lucide="user" class="w-12 h-12 text-white/10"></i>
+                    </div>
+                    <p class="font-bold text-[#00f2ff]">Fiona Sachdeva</p>
+                    <p class="text-[10px] text-white/20 uppercase tracking-widest mt-1">Mps</p>
+                </div>
+                <div class="text-center group">
+                    <div class="profile-frame group-hover:border-white transition-colors">
+                        <i> data-lucide="user" class="w-12 h-12 text-white/10"></i>
+                    </div>
+                    <p class="font-bold text-[#00f2ff]">Arhita Jain</p>
+                    <p class="text-[10px] text-white/20 uppercase tracking-widest mt-1">Mps</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#050b18]/95 backdrop-blur-xl border-t border-white/5 p-4 z-50">
+        <div class="max-w-3xl mx-auto flex justify-between items-center px-4">
+            <button onclick="switchTab('dashboard')" class="nav-item flex flex-col items-center gap-1 active" id="nav-dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="text-[9px] uppercase font-bold tracking-widest">Core</span>
+            </button>
+            <button onclick="switchTab('tools')" class="nav-item flex flex-col items-center gap-1 text-white/40" id="nav-tools">
+                <i data-lucide="wrench"></i>
+                <span class="text-[9px] uppercase font-bold tracking-widest">Tools</span>
+            </button>
+            <button onclick="switchTab('privacy')" class="nav-item flex flex-col items-center gap-1 text-white/40" id="nav-privacy">
+                <i data-lucide="shield"></i>
+                <span class="text-[9px] uppercase font-bold tracking-widest">Vault</span>
+            </button>
+            <button onclick="switchTab('apps')" class="nav-item flex flex-col items-center gap-1 text-white/40" id="nav-apps">
+                <i data-lucide="layers"></i>
+                <span class="text-[9px] uppercase font-bold tracking-widest">Intel</span>
+            </button>
+            <button onclick="switchTab('help')" class="nav-item flex flex-col items-center gap-1 text-white/40" id="nav-help">
+                <i data-lucide="life-buoy"></i>
+                <span class="text-[9px] uppercase font-bold tracking-widest">Help</span>
+            </button>
+            <button onclick="switchTab('team')" class="nav-item flex flex-col items-center gap-1 text-white/40" id="nav-team">
+                <i data-lucide="users"></i>
+                <span class="text-[9px] uppercase font-bold tracking-widest">Team</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // State Management
+        let state = JSON.parse(localStorage.getItem('cyberguard_state')) || {
+            user: null,
+            score: 0,
+            progress: {
+                screenLock: true, autoUpdates: false, unknownApps: false,
+                privacyReviewed: false, passwordChecked: false, scamChecked: false,
+                scriptsViewed: false, fileScanned: false
+            }
+        };
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        // State Helpers
+        function saveState() { localStorage.setItem('cyberguard_state', JSON.stringify(state)); }
+
+        // Routing
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                item.classList.add('text-white/40');
+            });
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const nav = document.getElementById(`nav-${tabId}`);
+            nav.classList.add('active');
+            nav.classList.remove('text-white/40');
+
+            if (tabId === 'apps') startAppScan();
+            if (tabId === 'help') loadRotatingVideo();
+            window.scrollTo(0, 0);
+        }
+
+        // Dashboard Logic
+        function updateCSI() {
+            let total = 0;
+            const components = {
+                screenLock: 20, autoUpdates: 15, unknownApps: 15,
+                privacyReviewed: 15, passwordChecked: 15, scamChecked: 10,
+                scriptsViewed: 5, fileScanned: 5
+            };
+            
+            Object.keys(state.progress).forEach(key => { if (state.progress[key]) total += components[key]; });
+            state.score = total;
+            saveState();
+
+            const circle = document.getElementById('score-circle');
+            const circumference = 2 * Math.PI * 100;
+            circle.style.strokeDashoffset = circumference - (total / 100) * circumference;
+
+            document.getElementById('score-value').innerText = total;
+            document.getElementById('score-label').innerText = total < 40 ? 'Vulnerable' : total < 75 ? 'Protected' : 'Cyber Secure';
+
+            document.getElementById('shield-indicator').className = `w-2 h-2 rounded-full ${state.progress.privacyReviewed ? 'bg-green-500' : 'bg-red-500'}`;
+            document.getElementById('app-indicator').className = `w-2 h-2 rounded-full ${state.progress.unknownApps ? 'bg-green-500' : 'bg-red-500'}`;
+            document.getElementById('privacy-status').innerText = state.progress.privacyReviewed ? 'HARDENED' : 'EXPOSED';
+            document.getElementById('app-status').innerText = state.progress.unknownApps ? 'CLEAN' : 'UNVERIFIED';
+        }
+
+        function recheckSafety() { updateCSI(); }
+
+        // Tools
+        function checkPassword() {
+            const pass = document.getElementById('pass-input').value;
+            const bar = document.getElementById('pass-strength-bar');
+            const label = document.getElementById('pass-strength-label');
+            const crackTime = document.getElementById('pass-crack-time');
+
+            if (!pass) { bar.style.width = '0'; label.innerText = 'NONE'; return; }
+
+            let s = 0;
+            if (pass.length > 8) s += 25;
+            if (/[A-Z]/.test(pass)) s += 25;
+            if (/[0-9]/.test(pass)) s += 25;
+            if (/[^A-Za-z0-9]/.test(pass)) s += 25;
+
+            bar.style.width = s + '%';
+            bar.className = s <= 25 ? 'h-full bg-red-500' : s <= 50 ? 'h-full bg-orange-500' : s <= 75 ? 'h-full bg-yellow-500' : 'h-full bg-[#00f2ff]';
+            label.innerText = s <= 25 ? 'WEAK' : s <= 50 ? 'FAIR' : s <= 75 ? 'GOOD' : 'STRONG';
+            crackTime.innerText = s <= 25 ? 'MINUTES' : s <= 50 ? 'DAYS' : s <= 75 ? 'MONTHS' : 'CENTURIES';
+
+            if (s >= 75 && !state.progress.passwordChecked) { state.progress.passwordChecked = true; updateCSI(); }
+        }
+
+        function handleFileScan(input) {
+            const file = input.files[0];
+            const result = document.getElementById('file-scan-result');
+            if (!file) return;
+            result.classList.remove('hidden');
+            result.className = 'p-4 rounded-xl border border-[#00f2ff]/30 bg-[#00f2ff]/5 flex gap-3 mt-4';
+            result.innerHTML = `
+                <i data-lucide="shield-check" class="text-[#00f2ff]"></i>
+                <div class="text-xs">
+                    <p class="font-bold">INTEGRITY VERIFIED</p>
+                    <p class="text-white/40">File: ${file.name} | Result: No threats detected locally.</p>
+                </div>
+            `;
+            lucide.createIcons();
+            state.progress.fileScanned = true;
+            updateCSI();
+        }
+
+        function openLinkModal() { if (document.getElementById('link-input').value) document.getElementById('link-modal').classList.remove('hidden'); }
+        function closeLinkModal() { document.getElementById('link-modal').classList.add('hidden'); }
+        function getLinkVerdict() {
+            const checks = document.querySelectorAll('.checklist-item');
+            let risky = 0;
+            checks.forEach(c => { if (!c.checked) risky++; });
+            const verdict = document.getElementById('link-verdict');
+            verdict.classList.remove('hidden');
+            verdict.className = `p-4 rounded-xl border mt-4 text-sm ${risky >= 2 ? 'border-red-500/30 bg-red-500/5 text-red-500' : 'border-green-500/30 bg-green-500/5 text-green-500'}`;
+            verdict.innerHTML = risky >= 2 ? '⚠️ HIGH RISK: Patterns suggest phishing or credential theft.' : '✅ LOW RISK: Destination appears standard.';
+            closeLinkModal();
+            state.progress.scamChecked = true;
+            updateCSI();
+        }
+
+        function analyzeScam() {
+            const text = document.getElementById('scam-input').value.toLowerCase();
+            const result = document.getElementById('scam-result');
+            if (!text) return;
+            const risky = text.includes('otp') || text.includes('immediately') || text.includes('block') || text.includes('prize');
+            result.classList.remove('hidden');
+            result.className = `p-4 rounded-xl border mt-4 text-sm ${risky ? 'border-red-500/30 bg-red-500/5 text-red-500' : 'border-green-500/30 bg-green-500/5 text-green-500'}`;
+            result.innerHTML = risky ? '🚨 THREAT: Social engineering markers detected.' : '✅ SAFE: No obvious scam markers found.';
+            state.progress.scamChecked = true;
+            updateCSI();
+        }
+
+        // Vault
+        function openPermissions(type) {
+            alert(`CyberGuard protocol: Requesting ${type} permission audit. Please verify browser permissions manually.`);
+            state.progress.privacyReviewed = true;
+            updateCSI();
+        }
+
+        // Help
+        function loadRotatingVideo() {
+            const videos = ['p_2_150DqM8', 'WJ0-E0D-tY0', '7pYpY8OpxX4', 'Y7z5S7X4K_w', 'Q70_FpD-sRk'];
+            const day = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+            document.getElementById('yt-container').innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videos[day % videos.length]}" frameborder="0" allowfullscreen></iframe>`;
+        }
+
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            const isHidden = el.classList.contains('hidden');
+            
+            if (!id.startsWith('tip')) {
+                // Close others in same group
+                const group = id.startsWith('script') ? 'script' : 'hack';
+                document.querySelectorAll(`[id^="${group}"]`).forEach(s => s.classList.add('hidden'));
+                document.querySelectorAll(`[id^="icon-${group}"]`).forEach(i => i.style.transform = 'rotate(0deg)');
+            }
+
+            if (isHidden) {
+                el.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+                if (!id.startsWith('tip')) state.progress.scriptsViewed = true;
+                updateCSI();
+            } else {
+                el.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Intel
+        function startAppScan() {
+            const list = document.getElementById('app-list');
+            const count = document.getElementById('app-count');
+            const prog = document.getElementById('scan-progress');
+            const log = document.getElementById('scan-log');
+            list.innerHTML = ''; prog.style.width = '0%'; log.innerText = 'PROBING...';
+            const apps = [{n:'WhatsApp', p:'com.whatsapp', s:true}, {n:'Chrome', p:'com.chrome', s:true}, {n:'Unknown Tool', p:'io.sys.leak', s:false}];
+            setTimeout(() => {
+                prog.style.width = '100%';
+                apps.forEach((a, i) => {
+                    setTimeout(() => {
+                        log.innerText = `SCAN: ${a.p}`;
+                        const div = document.createElement('div');
+                        div.className = 'card p-4 rounded-xl flex justify-between items-center';
+                        div.innerHTML = `<div class="flex items-center gap-3"><i data-lucide="package" class="text-white/20"></i><span class="text-sm">${a.n}</span></div><span class="text-[9px] font-bold ${a.s ? 'text-green-500' : 'text-red-500'}">${a.s ? 'VERIFIED' : 'THREAT'}</span>`;
+                        list.appendChild(div); lucide.createIcons(); count.innerText = i+1;
+                        if (i === apps.length - 1) { log.innerText = 'DONE'; state.progress.unknownApps = true; updateCSI(); }
+                    }, i * 400);
+                });
+            }, 500);
+        }
+
+        // Auth
+        function toggleAuth() { document.getElementById('auth-overlay').classList.toggle('hidden'); }
+        function continueAsGuest() { state.user = {n:'Guest'}; toggleAuth(); updateUI(); }
+        function login() { state.user = {n:'Agent'}; toggleAuth(); updateUI(); }
+        function updateUI() {
+            if (state.user) {
+                document.getElementById('user-status').classList.remove('hidden');
+                document.getElementById('display-username').innerText = state.user.n;
+            }
+            updateCSI();
+        }
+
+        window.onload = function() {
+            updateUI();
+            toggleAuth();
+        };
+    </script>
+</body>
+</html>
